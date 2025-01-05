@@ -1,6 +1,7 @@
 package Menu;
 
 import UrlShortener.URLShortener;
+import com.google.gson.Gson;
 import config.Config;
 import url.Url;
 import url.UrlStorage;
@@ -8,8 +9,10 @@ import user.User;
 import user.UserStorage;
 
 import java.awt.*;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -22,15 +25,16 @@ import java.util.*;
 interface Option {
     void execute();
 }
+
 /// В классе Menu определена основная логика программы. Каждая
 /// функция определена объектом класса MenuItem.
 public class Menu {
     private final String dateFormat = "dd/MM/yyyy hh:mm:ss";
     private final Scanner scanner;
-    private final Config cfg;
     private final UserStorage userStorage;
     private final UrlStorage urlStorage;
     private boolean running = true;
+    private Config cfg;
     private User currUser;
 
     /// Класс определяет функциональность пункта меню,
@@ -63,8 +67,10 @@ public class Menu {
         options.add(new MenuItem("3. Удаление ссылки", this::deleteUrl));
         options.add(new MenuItem("4. Обновление ссылки", this::updateUrl));
         options.add(new MenuItem("5. Переход по ссылке", this::openUrl));
-        options.add(new MenuItem("6. Выход", this::stop));
+        options.add(new MenuItem("6. Обновить конфигурацию", this::UpdateConfig));
+        options.add(new MenuItem("7. Выход", this::stop));
     }
+
     // Основной цикл программы
     public void run() {
         while (running) {
@@ -73,6 +79,16 @@ public class Menu {
             options.get(option - 1).onSelected.execute();
         }
     }
+
+    public void UpdateConfig() {
+        Gson gson = new Gson();
+        try (Reader reader = new FileReader("configs/config.json")) {
+            this.cfg = gson.fromJson(reader, Config.class);
+        } catch (IOException e) {
+            System.out.println("could not load config");
+        }
+    }
+
     // Считывание нужного пункта меню
     private Integer getOption() {
         Integer option = null;
@@ -86,12 +102,14 @@ public class Menu {
         }
         return option;
     }
+
     // Отрисовка меню
     private void show() {
         for (MenuItem option : options) {
             System.out.println(option.getName());
         }
     }
+
     // Функция авторизации/аутентификации
     private void auth() {
         do {
@@ -109,6 +127,7 @@ public class Menu {
             }
         } while (currUser == null);
     }
+
     /// Функция добавления ссылки. Пользователь может определить срок действия ссылки и количество переходов,
     /// либо оставить значения по умолчанию. Если ссылка существует, она будет удалена и заменена на новую,
     /// таким образом функциональность удаления и обновления ссылок идентичны.
@@ -153,6 +172,7 @@ public class Menu {
         this.urlStorage.AddUrl(url);
         System.out.println("Ссылка добавлена:\n" + shortUrl);
     }
+
     // Функция удаления ссылки
     private void deleteUrl() {
         if (unauthorized()) {
@@ -168,10 +188,12 @@ public class Menu {
             System.out.println("Ссылка не найдена");
         }
     }
+
     // Удаление ссылки (см. функцию добавления ссылки)
     private void updateUrl() {
         this.addUrl();
     }
+
     /// Открытие ссылки. Если лимит переходов исчерпан, либо ссылка просрочена, пользователь будет уведомлен об этом,
     /// а ссылка удалена из хранилища.
     private void openUrl() {
@@ -202,10 +224,12 @@ public class Menu {
             System.out.println("Не удалось открыть ссылку");
         }
     }
+
     // Закрытие приложения
     private void stop() {
         this.running = false;
     }
+
     // Проверка авторизации
     private boolean unauthorized() {
         return this.currUser == null;
