@@ -1,6 +1,6 @@
 package url;
 
-
+/// Интерфейс хранилища ссылок
 public interface UrlStorage {
     boolean AddUrl(Url url);
     boolean RemoveUrl(String url, String UserId);

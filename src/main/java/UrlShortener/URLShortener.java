@@ -8,12 +8,13 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Random;
 
-
+/// Класс для создания ссылок. Создание происходит на основе url соли, что обеспечивает возможность генерации
+/// различных ссылок для разных пользователей. Изменение случайного символа позволяет сохдавать новые ссылки для
+/// одного и того же пользователя
 public class URLShortener {
     private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final Random RANDOM = new Random();
 
-    // TODO check for existing url
     public static String GenerateShortURL(String url, String salt) {
         try {
             // Хэшируем при помощи алгоритма PBKDF2
@@ -24,7 +25,7 @@ public class URLShortener {
             // Преобразуем хэш в base62
             BigInteger bigInt = new BigInteger(1, hash);
 
-            // Convert the BigInteger to a base62 string
+            // преобразуем BigInteger в строку base62
             StringBuilder base62 = new StringBuilder();
             while (bigInt.compareTo(BigInteger.ZERO) > 0) {
                 BigInteger[] divmod = bigInt.divideAndRemainder(new BigInteger(String.valueOf(BASE62.length())));
@@ -32,13 +33,12 @@ public class URLShortener {
                 bigInt = divmod[0];
             }
 
-            // Add a random number to the base62 string
+            // Добавляем случайный символ к строке
             int randomNumber = RANDOM.nextInt(BASE62.length());
             base62.append(BASE62.charAt(randomNumber));
-            // Return the shortened URL
             return base62.reverse().toString();
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
+            System.out.println("Ошибка при создании ссылки");
             return null;
         }
     }

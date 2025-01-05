@@ -7,6 +7,8 @@ class Constants {
     public static final String USER_DIR = "Users";
 }
 
+/// Класс реализует сохранение и загрузку пользователей с дискового хранилища
+/// Для работы необходима папка Users в корне проекта
 public class DiskStorage implements UserStorage {
     @Override
     public User Create() {

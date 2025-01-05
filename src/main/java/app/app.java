@@ -11,7 +11,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
-
+/// app инициализирует инстансы хранилищ, считывает конфигурацию из файла
+/// и запускает работу программы
 public class app {
 
     private Menu menu;

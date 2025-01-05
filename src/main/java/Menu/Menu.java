@@ -17,10 +17,13 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 
+
+/// Необходим для отложенного определения функций MenuItem
 interface Option {
     void execute();
 }
-
+/// В классе Menu определена основная логика программы. Каждая
+/// функция определена объектом класса MenuItem.
 public class Menu {
     private final String dateFormat = "dd/MM/yyyy hh:mm:ss";
     private final Scanner scanner;
@@ -30,6 +33,8 @@ public class Menu {
     private boolean running = true;
     private User currUser;
 
+    /// Класс определяет функциональность пункта меню,
+    /// которую получает в конструкторе
     private class MenuItem {
         private final String name;
         private final Option onSelected;
@@ -47,6 +52,7 @@ public class Menu {
 
     List<MenuItem> options = new ArrayList<>();
 
+    /// Инициализация класса Menu, создание основных пунктов
     public Menu(UserStorage userStorage, UrlStorage urlStorage, InputStream input, Config cfg) {
         this.userStorage = userStorage;
         this.urlStorage = urlStorage;
@@ -59,7 +65,7 @@ public class Menu {
         options.add(new MenuItem("5. Переход по ссылке", this::openUrl));
         options.add(new MenuItem("6. Выход", this::stop));
     }
-
+    // Основной цикл программы
     public void run() {
         while (running) {
             show();
@@ -67,26 +73,26 @@ public class Menu {
             options.get(option - 1).onSelected.execute();
         }
     }
-
+    // Считывание нужного пункта меню
     private Integer getOption() {
         Integer option = null;
         while (option == null || option < 1 || option > this.options.size() + 1) {
             try {
                 option = scanner.nextInt();
             } catch (InputMismatchException e) {
-                System.out.println("Invalid option");
+                System.out.println("Неверный формат ввода");
             }
             scanner.nextLine();
         }
         return option;
     }
-
+    // Отрисовка меню
     private void show() {
         for (MenuItem option : options) {
             System.out.println(option.getName());
         }
     }
-
+    // Функция авторизации/аутентификации
     private void auth() {
         do {
             System.out.println("Введите свой идентификатор (пустое поле если не зарегистрированы):");
@@ -97,13 +103,20 @@ public class Menu {
                 currUser = userStorage.Get(userId);
             }
             if (currUser == null) {
-                System.out.println("Authentication failed");
+                System.out.println("Аутентификация не удалась");
             } else {
                 System.out.println("Вы авторизованы как " + currUser.getID());
             }
         } while (currUser == null);
     }
-
+    /// Функция добавления ссылки. Пользователь может определить срок действия ссылки
+    /// и количество переходов, либо оставить значения по умолчанию. Если ссылка существует,
+    /// она будет удалена и заменена на новую, таким образом функциональность удаления и обновления ссылок
+    /// идентичны.
+    ///
+    /// При создании ссылки в качестве соли для хэша используется уникальный идентификатор пользователя,
+    /// поэтому для каждого пользователя создаётся своя ссылка. При вызове с одними и теми же параметрами ссылки также
+    /// будут различны (см. URLShortener)
     private void addUrl() {
         if (unauthorized()) {
             System.out.println("Необходима авторизация!");
@@ -141,7 +154,7 @@ public class Menu {
         this.urlStorage.AddUrl(url);
         System.out.println("Ссылка добавлена:\n" + shortUrl);
     }
-
+    // Функция удаления ссылки
     private void deleteUrl() {
         if (unauthorized()) {
             System.out.println("Необходима авторизация!");
@@ -156,11 +169,11 @@ public class Menu {
             System.out.println("Ссылка не найдена");
         }
     }
-
+    // Удаление ссылки (см. функцию добавления ссылки)
     private void updateUrl() {
         this.addUrl();
     }
-
+    // Открытие ссылки (см. функцию добавления ссылки)
     private void openUrl() {
         if (unauthorized()) {
             System.out.println("Необходима авторизация!");
@@ -189,11 +202,11 @@ public class Menu {
             System.out.println("Не удалось открыть ссылку");
         }
     }
-
+    // Закрытие приложения
     private void stop() {
         this.running = false;
     }
-
+    // Проверка авторизации
     private boolean unauthorized() {
         return this.currUser == null;
     }

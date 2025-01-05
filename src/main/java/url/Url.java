@@ -2,6 +2,8 @@ package url;
 
 import java.util.Date;
 
+
+/// Класс для хранения информации о ссылке
 public class Url {
 
     String URL;
