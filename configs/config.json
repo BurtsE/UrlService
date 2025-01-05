@@ -1,0 +1,4 @@
+{
+  "URLAccessLimit": 3,
+  "URLExpirationTimeMillis": 86400000
+}
